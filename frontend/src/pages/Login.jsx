@@ -1,13 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const Login = () => {
   return (
     <>
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-base-300">
         <div className="card glass shadow-xl w-96 bg-neutral text-neutral-content">
           <div className="card-body items-center text-center">
-            <h2 className="card-title pb-7">Login</h2>
-            {/* <p>We are using cookies for no reason.</p> */}
+            <h2 className="card-title text-2xl pb-7">Login</h2>
 
             <label className="input input-md input-primary w-full text-neutral input-bordered flex items-center gap-2">
               <svg
