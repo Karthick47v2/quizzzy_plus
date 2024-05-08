@@ -1,8 +1,10 @@
-import os
 import json
 import random
 import PyPDF2
-
+import firebase_admin
+from firebase_admin import credentials, firestore, storage
+import datetime
+import requests
 from flask import Flask, request, jsonify
 from llama_index.llms.llama_cpp import LlamaCPP
 from llama_index.llms.llama_cpp.llama_utils import (
@@ -10,9 +12,16 @@ from llama_index.llms.llama_cpp.llama_utils import (
     completion_to_prompt,
 )
 
+app = Flask(__name__)
+
+cred = credentials.Certificate('path/to/service-account.json') 
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+storage = storage.bucket()
+
 def extract_text_from_pdf(pdf_file):
-    # Use PyPDF2 to extract text from PDF
-    with open(pdf_file, 'rb') as file:
+    with pdf_file as file:
         reader = PyPDF2.PdfReader(file)
         text = ''
         for page_num in range(len(reader.pages)):
@@ -29,7 +38,7 @@ def chunk_text(text, chunk_size=512):
 
 def limit_mcq_options(mcq_json):
     """Limits MCQ options to four, ensuring at least one distractor."""
-    mcq_json["options"] = random.sample(mcq_json["options"], k=4)  # Shuffle and take 4
+    mcq_json["options"] = random.sample(mcq_json["options"], k=4)  # shuffle and take 4
     if mcq_json["answer"] not in mcq_json["options"]:
         mcq_json["options"][0] = mcq_json["answer"]
     return mcq_json
@@ -44,9 +53,9 @@ def gnerate_questions(text_chunks, llm):
   used_chunks = set()
   generated_questions = set()
 
-  # Generate 5 sets of questions
+  # generate 5 sets of questions
   for _ in range(5):
-    # Stop if no unique chunks left
+    # stop if no unique chunks left
     if len(used_chunks) == len(text_chunks):
             break
 
@@ -73,7 +82,7 @@ def gnerate_questions(text_chunks, llm):
 
     mcq_json = limit_mcq_options(mcq_json)
 
-    # duplication Check
+    # duplication check
     if mcq_json["question"] not in generated_questions:
       generated_questions.add(mcq_json["question"])
       results["mcq_questions"].append(mcq_json)
@@ -84,17 +93,15 @@ def gnerate_questions(text_chunks, llm):
     json_tf_text = response_tf_dict["text"]
     tf_json = json.loads(json_tf_text)
 
-    # duplication Check
+    # duplication check
     if tf_json["statement"] not in generated_questions:
       generated_questions.add(tf_json["statement"])
       results["true_false_questions"].append(tf_json)
 
   return results
 
-app = Flask(__name__)
-
-# Load your LLM Model
 model_url = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+
 llm = LlamaCPP(
     model_url=model_url,
     model_path=None,
@@ -113,19 +120,26 @@ def generate_questions():
     if 'files' not in request.files:
         return jsonify({'error': 'No files uploaded'}), 400
 
-    text_chunks = []
-    for file in request.files.getlist('files'):
-        if file.filename.endswith('.pdf'):
-            try:
-                # TODO: save in firebase and read
-                pdf_text = extract_text_from_pdf(file)
-                text_chunks.extend(chunk_text(pdf_text))
-            except Exception as e:
-                return jsonify({'error': f'Error processing {file.filename}: {str(e)}'}), 500
-            
-    generated_questions_json = generate_questions(text_chunks, llm)
+    user_id = 123 # TODO: assumed a user id -> get user id
 
-    return generated_questions_json
+    try:
+        # store PDFs in Firebase Storage
+        text_chunks = []
+        for file in request.files.getlist('files'):
+            if file.filename.endswith('.pdf'):
+                blob = storage.blob(f'users/{user_id}/{file.filename}')
+                # signed URL with expiration time (1 hour)
+                expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+                signed_url = blob.generate_signed_url(expiration)
+                response = requests.get(signed_url)
+                text_chunks.extend(chunk_text(extract_text_from_pdf(response.content)))
+
+        generated_questions_json = generate_questions(text_chunks, llm)
+
+        return generated_questions_json
+
+    except Exception as e:
+        return jsonify({'error': f'Error processing PDFs: {str(e)}'}), 500
 
 
 if __name__ == '__main__':
