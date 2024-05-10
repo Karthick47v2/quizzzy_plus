@@ -3,3 +3,4 @@ python-dotenv
 llama-index
 requests
 Flask
+firebase-admin
