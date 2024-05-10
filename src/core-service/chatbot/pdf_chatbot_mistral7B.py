@@ -40,7 +40,7 @@ embed_model = HuggingFaceEmbedding(model_name="thenlper/gte-large")
 # Initialize Qdrant client
 qdrant_client = QdrantClient(
     url="https://6930324d-975a-45db-a2db-d88db5f71091.us-east4-0.gcp.cloud.qdrant.io:6333",
-    api_key="z8k04lUpFt5vPgUjnCr4Oay-K9GyhfD2uAOuZHh31-AiW1fv_DAqRw",
+    api_key= os.getenv("Qdrant_API_key"),
 )
 
 # Recreate Qdrant collection
