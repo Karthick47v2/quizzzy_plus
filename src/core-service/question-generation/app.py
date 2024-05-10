@@ -11,6 +11,31 @@ from llama_index.llms.llama_cpp.llama_utils import (
     messages_to_prompt,
     completion_to_prompt,
 )
+import os
+import subprocess
+
+# set environment variables for CUDA support
+os.environ['CMAKE_ARGS'] = '-DLLAMA_CUBLAS=on'
+os.environ['FORCE_CMAKE'] = '1'
+
+try:
+    subprocess.check_call(['pip', 'install', '-r', 'requirements.txt'])
+    print("Installation successful!")
+except subprocess.CalledProcessError as e:
+    print(f"Installation failed with error: {e}")
+    
+llm = LlamaCPP(
+    model_url="https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf",
+    model_path=None,
+    temperature=0.1,
+    max_new_tokens=256,
+    context_window=3900,
+    generate_kwargs={},
+    model_kwargs={"n_gpu_layers": 1},
+    messages_to_prompt=messages_to_prompt,
+    completion_to_prompt=completion_to_prompt,
+    verbose=True,
+)
 
 app = Flask(__name__)
 
@@ -43,7 +68,7 @@ def limit_mcq_options(mcq_json):
         mcq_json["options"][0] = mcq_json["answer"]
     return mcq_json
 
-def gnerate_questions(text_chunks, llm):
+def generate_questions_json(text_chunks, llm):
 
   results = {
         "mcq_questions": [],
@@ -100,21 +125,6 @@ def gnerate_questions(text_chunks, llm):
 
   return results
 
-model_url = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
-
-llm = LlamaCPP(
-    model_url=model_url,
-    model_path=None,
-    temperature=0.1,
-    max_new_tokens=256,
-    context_window=3900,
-    generate_kwargs={},
-    model_kwargs={"n_gpu_layers": 1},
-    messages_to_prompt=messages_to_prompt,
-    completion_to_prompt=completion_to_prompt,
-    verbose=True,
-)
-
 @app.route('/generate-questions', methods=['POST'])
 def generate_questions():
     if 'files' not in request.files:
@@ -134,7 +144,7 @@ def generate_questions():
                 response = requests.get(signed_url)
                 text_chunks.extend(chunk_text(extract_text_from_pdf(response.content)))
 
-        generated_questions_json = generate_questions(text_chunks, llm)
+        generated_questions_json = generate_questions_json(text_chunks, llm)
 
         return generated_questions_json
 
