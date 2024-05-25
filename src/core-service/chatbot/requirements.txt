@@ -1,0 +1,4 @@
+python-dotenv
+llama-index
+llama-index-vector-stores-qdrant
+llama-index-postprocessor-rankgpt-rerank

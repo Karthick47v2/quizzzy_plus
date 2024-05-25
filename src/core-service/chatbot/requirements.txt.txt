@@ -1,8 +1,0 @@
-pypdf
-python-dotenv
-transformers
-llama-index
-llama-index-embeddings-huggingface
-llama-index-llms-llama-cpp
-sentence-transformers
-llama-index-vector-stores-qdrant
