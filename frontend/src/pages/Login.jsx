@@ -1,22 +1,28 @@
 import { useState } from 'react';
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!email | !password) {
+      setError('All the fields are required!');
+      return;
+    }
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/login', {
+      const response = await fetch(process.env.REACT_APP_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({email, password }),
+        body: JSON.stringify({ email, password }),
       });
-
 
       console.log(response);
       if (response.ok) {
@@ -24,19 +30,27 @@ const Login = () => {
       } else {
         // Login failed, handle accordingly
         const data = await response.json();
-        console.error('Login failed:', data.error);
+        setError(data.error);
+        // console.error('Login failed:', data.error);
       }
     } catch (error) {
-      console.error('Error Logging in:', error);
+      // console.error('Error Logging in:', error);
+      setError(data.error);
     }
   };
   return (
     <div className="flex items-center justify-center h-screen bg-base-300">
-        <div className="card glass shadow-xl w-96 bg-neutral text-neutral-content">
-          <div className="card-body items-center text-center">
-            <h2 className="card-title text-2xl pb-7">Login</h2>
+      <div className="card glass shadow-xl w-96 bg-neutral text-neutral-content">
+        <div className="card-body items-center text-center">
+          <h2 className="card-title text-2xl pb-3">Login</h2>
 
-            <form onSubmit={handleSubmit} className="w-full max-w-sm">
+          {error && (
+            <div className="mb-2 bg-red-500 text-white p-2 w-full rounded font-thin">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="w-full max-w-sm">
             <label className="input input-md input-primary w-full text-neutral input-bordered flex items-center gap-2 mb-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +61,13 @@ const Login = () => {
                 <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
                 <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
               </svg>
-              <input type="text" className="grow" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                type="text"
+                className="grow"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </label>
 
             <label className="input input-md input-primary w-full text-neutral input-bordered flex items-center gap-2 mb-2">
@@ -63,21 +83,29 @@ const Login = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <input type="password" className="grow" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+              <input
+                type="password"
+                className="grow"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </label>
-            <div>
-              Don't have an account?
-              <Link to="/register">
-                <button className="btn btn-active btn-link">Sign Up</button>
-              </Link>
+            <div className="card-actions justify-center mt-3">
+              <button type="submit" className="btn btn-sm w-full btn-primary">
+                Login
+              </button>
             </div>
-            <div className="card-actions justify-center">
-              <button className="btn btn-sm btn-primary">Login</button>
-            </div>
-            </form>
+          </form>
+          <div>
+            Don't have an account?
+            <Link to="/register">
+              <button className="btn btn-active btn-link">Sign Up</button>
+            </Link>
           </div>
         </div>
       </div>
+    </div>
   );
 };
 export default Login;

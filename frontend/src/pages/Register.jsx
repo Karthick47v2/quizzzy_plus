@@ -6,17 +6,25 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!username | !email | !password | !confirmPassword) {
+      setError('All the fields are required!');
+      return;
+    }
 
     if (password !== confirmPassword) {
-      console.error("Passwords don't match");
+      // console.error("Passwords don't match");
+      setError("Passwords don't match!");
       return;
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/register', {
+      const response = await fetch(process.env.REACT_APP_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,20 +37,28 @@ const Register = () => {
       } else {
         // Registration failed, handle accordingly
         const data = await response.json();
-        console.error('Registration failed:', data.error);
+        // console.error('Registration failed:', data.error);
+        setError(data.error);
       }
     } catch (error) {
-      console.error('Error registering:', error);
+      // console.error('Error registering:', error);
+      setError(data.error);
     }
   };
 
   return (
     <div className="flex items-center justify-center h-screen bg-base-300">
-        <div className="card glass shadow-xl w-96 bg-neutral text-neutral-content">
-          <div className="card-body items-center text-center">
-            <h2 className="card-title text-2xl pb-7">Register</h2>
+      <div className="card glass shadow-xl w-96 bg-neutral text-neutral-content">
+        <div className="card-body items-center text-center">
+          <h2 className="card-title text-2xl pb-3">Register</h2>
 
-            <form onSubmit={handleSubmit} className="w-full max-w-sm">
+          {error && (
+            <div className="mb-2 bg-red-500 text-white p-2 w-full rounded font-thin">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="w-full max-w-sm">
             <label className="input input-md input-primary w-full text-neutral input-bordered flex items-center gap-2 mb-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -52,7 +68,13 @@ const Register = () => {
               >
                 <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
               </svg>
-              <input type="text" className="grow" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <input
+                type="text"
+                className="grow"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
             </label>
 
             <label className="input input-md input-primary w-full text-neutral input-bordered flex items-center gap-2 mb-2">
@@ -65,7 +87,13 @@ const Register = () => {
                 <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
                 <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
               </svg>
-              <input type="text" className="grow" placeholder="Email"  value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                type="text"
+                className="grow"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </label>
 
             <label className="input input-md input-primary w-full text-neutral input-bordered flex items-center gap-2 mb-2">
@@ -81,9 +109,15 @@ const Register = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <input type="password" className="grow" placeholder="Password"  value={password} onChange={(e) => setPassword(e.target.value)}/>
+              <input
+                type="password"
+                className="grow"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </label>
-            
+
             <label className="input input-md input-primary w-full text-neutral input-bordered flex items-center gap-2 mb-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -97,22 +131,30 @@ const Register = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <input type="password" className="grow" placeholder="Confirm password"  value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <input
+                type="password"
+                className="grow"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
             </label>
 
-            <div>
-              Already have an account?
-              <Link to="/login">
-                <button className="btn btn-active btn-link">Login</button>
-              </Link>
+            <div className="card-actions justify-center mt-3">
+              <button className="btn btn-sm w-full btn-primary">
+                Register
+              </button>
             </div>
-            <div className="card-actions justify-center">
-              <button className="btn btn-sm btn-primary">Register</button>
-            </div>
-            </form>
+          </form>
+          <div>
+            Already have an account?
+            <Link to="/login">
+              <button className="btn btn-active btn-link">Login</button>
+            </Link>
           </div>
         </div>
       </div>
+    </div>
   );
 };
 export default Register;
