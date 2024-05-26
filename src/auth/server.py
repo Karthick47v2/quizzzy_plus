@@ -1,47 +1,82 @@
 import jwt
 import datetime
 import os
+import requests
+import json
 from flask import Flask, request
-from flask_mysqldb import MySQL
+from flask_cors import CORS
 from dotenv import load_dotenv
+import pyrebase
 
 load_dotenv()
 
 server = Flask(__name__)
-server.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET')
-mysql = MySQL(server)
+CORS(server, resources={r"/*": {"origins": "*"}})
 
-server.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST')
-server.config['MYSQL_USER'] = os.environ.get('MYSQL_USER')
-server.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD')
-server.config['MYSQL_DB'] = os.environ.get('MYSQL_DB')
-server.config['MYSQL_PORT'] = os.environ.get('MYSQL_PORT')
+server.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET')
+
+firebase_config = {
+    'apiKey': "AIzaSyAyTNs5FQxsCtjP3HcSwBbtq2DvKp1CWWQ",
+    'authDomain': "quizzzy-plus.firebaseapp.com",
+    'projectId': "quizzzy-plus",
+    'storageBucket': "quizzzy-plus.appspot.com",
+    'messagingSenderId': "403474519501",
+    'appId': "1:403474519501:web:82cfabebbd8beaea53e084",
+    'databaseURL': "https://quizzzy-plus-default-rtdb.firebaseio.com/"
+}
+
+firebase = pyrebase.initialize_app(firebase_config)
+
+auth = firebase.auth()
+storage = firebase.storage()
+
+# #storage
+# storage.child(cloudfilename).put(filename)
+# storage.child(cloudfilenmae).download('', downloadedfilename)
+
+
+@server.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    try:
+        auth.create_user_with_email_and_password(
+            email, password)
+        user = auth.sign_in_with_email_and_password(
+            email, password)
+        auth.update_profile(user['idToken'], display_name=username)
+        return 'Succes', 200
+    except requests.HTTPError as e:
+        error_json = e.args[1]
+        error = json.loads(error_json)['error']['message']
+        if error == "EMAIL_EXISTS":
+            return "Email already exists", 403
+        return str(e), 403
+    except Exception as e:
+        return str(e), 403
 
 
 @server.route('/login', methods=['POST'])
 def login():
-    auth = request.authorization
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
 
-    if not auth:
-        return 'missing credentials', 401
+    try:
+        user = auth.sign_in_with_email_and_password(
+            email, password)
 
-    cur = mysql.connection.cursor()
-    res = cur.execute(
-        'SELELCT email, password FROM user WHERE email=%s', (auth.username,)
-    )
+        # print(user)
+        # token = create_jwt(email, os.environ.get('FLASK_SECRET'), True)
 
-    if res > 0:
-        user_row = cur.fetchone()
-        email = user_row[0]
-        password = user_row[1]
-
-        if auth.username != email or auth.password != password:
-            return 'invalid credentials', 401
-        else:
-            return create_jwt(auth.username, os.environ.get('FLASK_SECRET'), True)
-
-    else:
-        return 'invalid credentials', 401
+        return user['idToken'], 200
+    except requests.HTTPError as e:
+        return str(e), 403
+    except Exception as e:
+        return str(e), 403
 
 
 @server.route('/validate', methods=['POST'])
@@ -77,4 +112,4 @@ def create_jwt(username, secret, authz):
 
 
 if __name__ == '__main__':
-    server.run(host='0.0.0.0', port=5000)
+    server.run(host='0.0.0.0', port=5000, debug=True)
