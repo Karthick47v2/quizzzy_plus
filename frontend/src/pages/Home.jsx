@@ -16,7 +16,7 @@ const Home = () => {
               Instantly convert PDFs to quizzes with{" "}
               <strong>Quizzy Plus</strong>. Effortless, accurate and engaging.
             </p>
-            <Link to="/chatbot">
+            <Link to="/login">
               <button className="btn btn-primary text-md font-semibold">
                 Get Started
                 <FaArrowRight />
