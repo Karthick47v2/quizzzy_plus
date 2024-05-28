@@ -19,35 +19,27 @@ const Register = () => {
     }
 
     if (password !== confirmPassword) {
-      // console.error("Passwords don't match");
       setError("Passwords don't match!");
       return;
     }
 
-    console.log('logged in');
-    return navigate('/login');
+    try {
+      const response = await fetch("http://quizzzy.com/register", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-    // try {
-    //   const response = await fetch(process.env.REACT_APP_API_URL, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ username, email, password }),
-    //   });
-
-    //   // if (response.ok) {
-    //   //   // Registration successful, handle accordingly
-    //   // } else {
-    //   //   // Registration failed, handle accordingly
-    //   //   const data = await response.json();
-    //   //   // console.error('Registration failed:', data.error);
-    //   //   setError(data.error);
-    //   // }
-    // } catch (error) {
-    //   // console.error('Error registering:', error);
-    //   setError(data.error);
-    // }
+      if (response.ok) {
+        return navigate('/login');
+      } else {
+        setError(response.statusText);
+      }
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (

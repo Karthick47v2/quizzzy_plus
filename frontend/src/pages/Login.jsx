@@ -16,30 +16,24 @@ const Login = () => {
       return;
     }
 
-    return navigate('/chatbot');
+    try {
+      const response = await fetch("http://quizzzy.com/login", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    // try {
-    //   const response = await fetch(process.env.REACT_APP_API_URL, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ email, password }),
-    //   });
-
-    //   console.log(response);
-    //   if (response.ok) {
-    //     // Login successful, handle accordingly
-    //   } else {
-    //     // Login failed, handle accordingly
-    //     const data = await response.json();
-    //     setError(data.error);
-    //     // console.error('Login failed:', data.error);
-    //   }
-    // } catch (error) {
-    //   // console.error('Error Logging in:', error);
-    //   setError(data.error);
-    // }
+      if (response.ok) {
+        const userId = await response.text();
+        return navigate('/chatbot', { state: { token: userId } })
+      } else {
+        setError(response.statusText);
+      }
+    } catch (error) {
+      setError(error.message);
+    }
   };
   return (
     <div className="flex items-center justify-center h-screen bg-base-300">
