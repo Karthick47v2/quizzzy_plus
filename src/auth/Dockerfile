@@ -2,7 +2,7 @@ FROM python:3.10-slim-bookworm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends --no-install-suggests pkg-config \
-    build-essential default-libmysqlclient-dev \
+    build-essential \
     && pip install --no-cache-dir --upgrade pip
 
 WORKDIR /app
@@ -12,4 +12,4 @@ COPY . /app
 
 EXPOSE 5000
 
-CMD ['python3', 'server.py']
+CMD ["python3", "-u", "server.py"]
