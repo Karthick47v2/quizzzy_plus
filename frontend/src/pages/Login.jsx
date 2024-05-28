@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, redirect, useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,28 +16,30 @@ const Login = () => {
       return;
     }
 
-    try {
-      const response = await fetch(process.env.REACT_APP_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    return navigate('/chatbot');
 
-      console.log(response);
-      if (response.ok) {
-        // Login successful, handle accordingly
-      } else {
-        // Login failed, handle accordingly
-        const data = await response.json();
-        setError(data.error);
-        // console.error('Login failed:', data.error);
-      }
-    } catch (error) {
-      // console.error('Error Logging in:', error);
-      setError(data.error);
-    }
+    // try {
+    //   const response = await fetch(process.env.REACT_APP_API_URL, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ email, password }),
+    //   });
+
+    //   console.log(response);
+    //   if (response.ok) {
+    //     // Login successful, handle accordingly
+    //   } else {
+    //     // Login failed, handle accordingly
+    //     const data = await response.json();
+    //     setError(data.error);
+    //     // console.error('Login failed:', data.error);
+    //   }
+    // } catch (error) {
+    //   // console.error('Error Logging in:', error);
+    //   setError(data.error);
+    // }
   };
   return (
     <div className="flex items-center justify-center h-screen bg-base-300">

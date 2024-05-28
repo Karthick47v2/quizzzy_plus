@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, redirect, useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -7,6 +7,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,27 +24,30 @@ const Register = () => {
       return;
     }
 
-    try {
-      const response = await fetch(process.env.REACT_APP_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-      console.log(response);
-      if (response.ok) {
-        // Registration successful, handle accordingly
-      } else {
-        // Registration failed, handle accordingly
-        const data = await response.json();
-        // console.error('Registration failed:', data.error);
-        setError(data.error);
-      }
-    } catch (error) {
-      // console.error('Error registering:', error);
-      setError(data.error);
-    }
+    console.log('logged in');
+    return navigate('/login');
+
+    // try {
+    //   const response = await fetch(process.env.REACT_APP_API_URL, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ username, email, password }),
+    //   });
+
+    //   // if (response.ok) {
+    //   //   // Registration successful, handle accordingly
+    //   // } else {
+    //   //   // Registration failed, handle accordingly
+    //   //   const data = await response.json();
+    //   //   // console.error('Registration failed:', data.error);
+    //   //   setError(data.error);
+    //   // }
+    // } catch (error) {
+    //   // console.error('Error registering:', error);
+    //   setError(data.error);
+    // }
   };
 
   return (
