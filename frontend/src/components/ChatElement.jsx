@@ -1,7 +1,13 @@
 import { useEffect } from 'react';
 import { useState } from 'react';
 
-const ChatElement = ({ message, side, isBot, animate = false, delay = 8 }) => {
+const ChatElement = ({
+  message,
+  isBot,
+  animate = false,
+  delay = 8,
+  setAnimationComplete,
+}) => {
   const [currentText, setCurrentText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -11,18 +17,23 @@ const ChatElement = ({ message, side, isBot, animate = false, delay = 8 }) => {
         setCurrentText((prevText) => prevText + message[currentIndex]);
         setCurrentIndex((prevIndex) => prevIndex + 1);
       }, delay);
+      if (currentIndex === message.length - 1) {
+        // setAnimationComplete(true);
+      }
       return () => clearTimeout(timeout);
     }
   }, [message, delay, currentIndex]);
 
   return (
     <div
-      className={`chat chat-start mt-4 ${
-        side === 'start' ? 'chat-start' : 'chat-end'
-      }`}
+      className={`chat chat-start mt-4 ${isBot ? 'chat-start' : 'chat-end'}`}
     >
-      <div className="chat-image avatar">
-        <div className="w-10 rounded-full">
+      <div
+        className={`chat-image avatar ${
+          isBot && animate ? 'animate-bounce' : ''
+        }`}
+      >
+        <div className={`w-10 rounded-full ${isBot ? 'bg-red-500' : ''}`}>
           {!isBot && (
             <img
               alt="Tailwind CSS chat bubble component"
