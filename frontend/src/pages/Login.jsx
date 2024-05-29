@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, redirect, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +17,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("http://quizzzy.com/login", {
+      const response = await fetch('http://quizzzy.com/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,8 +26,8 @@ const Login = () => {
       });
 
       if (response.ok) {
-        const userId = await response.text();
-        return navigate('/chatbot', { state: { token: userId } })
+        const token = await response.text();
+        return navigate('/chatbot', { state: { token: token } });
       } else {
         setError(response.statusText);
       }
@@ -35,6 +35,7 @@ const Login = () => {
       setError(error.message);
     }
   };
+
   return (
     <div className="flex items-center justify-center h-screen bg-base-300">
       <div className="card glass shadow-xl w-96 bg-neutral text-neutral-content">

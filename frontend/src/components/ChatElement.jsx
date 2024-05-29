@@ -1,13 +1,7 @@
 import { useEffect } from 'react';
 import { useState } from 'react';
 
-const ChatElement = ({
-  message,
-  isBot,
-  animate = false,
-  delay = 8,
-  setAnimationComplete,
-}) => {
+const ChatElement = ({ message, isBot, animate = false, delay = 8 }) => {
   const [currentText, setCurrentText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -98,8 +92,16 @@ const ChatElement = ({
           )}
         </div>
       </div>
-      {animate && <div className="chat-bubble">{currentText}</div>}
-      {!animate && <div className="chat-bubble">{message}</div>}
+      {animate && (
+        <div className={`chat-bubble ${isBot ? 'bg-green-500' : ''}`}>
+          {currentText}
+        </div>
+      )}
+      {!animate && (
+        <div className={`chat-bubble ${isBot ? 'bg-green-500' : ''}`}>
+          {message}
+        </div>
+      )}
     </div>
   );
 };
