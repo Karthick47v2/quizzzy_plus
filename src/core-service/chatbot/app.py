@@ -21,10 +21,6 @@ from flask_cors import CORS
 import os
 import pyrebase
 
-# from dotenv import load_dotenv
-
-# load_dotenv()
-
 firebase_config = {
     'apiKey': "AIzaSyAyTNs5FQxsCtjP3HcSwBbtq2DvKp1CWWQ",
     'authDomain': "quizzzy-plus.firebaseapp.com",
@@ -37,7 +33,6 @@ firebase_config = {
 
 firebase = pyrebase.initialize_app(firebase_config)
 storage = firebase.storage()
-auth = firebase.auth()
 
 UPLOAD_FOLDER = 'chatpdf'
 
