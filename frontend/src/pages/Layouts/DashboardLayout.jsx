@@ -1,9 +1,9 @@
-import { Outlet } from "react-router-dom";
-import Navbar from "../../components/Navbar.jsx";
+import { Outlet } from 'react-router-dom';
+import Navbar from '../../components/Navbar.jsx';
 
 const DashboardLayout = () => {
   return (
-    <div className="h-screen bg-base-200">
+    <div className="h-screen bg-neutral">
       <Navbar />
       <Outlet />
     </div>
