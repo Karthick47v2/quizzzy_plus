@@ -17,34 +17,40 @@ Quizy Plus is an educational web application designed to assist students in prep
 
 ## Microservices
 ### Implementation Methods
-We used the Netflix software stack for microservices implementation, including Eureka for service discovery, Zuul as the API gateway, and Hystrix for fault tolerance.
+We used Kubernetes for microservices orchestration, ensuring each service is independently scalable and manageable. Kubernetes handles the deployment, scaling, and operation of application containers across clusters of hosts.
 
 ### Core Services
 #### Chat Service
 Functionality: Allows students to upload PDF documents and interact with the chat assistant to clarify doubts.
 Endpoints:
-- POST /upload: Upload a PDF document.
-- POST /chat: Send a chat message.
-- DELETE /clearChat: Clear the chat history.
-- DELETE /deleteDocument: Delete the uploaded document.
+- POST chat/upload: Upload a PDF document.
+- POST chat/query: Chat with assistant.
+- DELETE chat/clear-chat: Clear the chat history.
+- DELETE chat/clear-doc: Clear the uploaded documents.
+
+
 Inter-service Interactions: Communicates with the vector storage and GPT-3.5 model for query processing.
 
 #### Quiz Service
 Functionality: Generates multiple-choice and true/false questions from uploaded PDFs.
 Endpoints:
-- POST /upload: Upload a PDF document.
-- POST /generateQuiz: Generate a quiz from the document.
-- GET /quiz: Retrieve the generated quiz.
-- DELETE /deleteQuiz: Delete a specified quiz.
+- POST quiz/gen-qa: Upload a PDF document to generate Q&A.
+- GET quiz/get-qa: Retrieve the generated quiz.
+- DELETE quiz/delete-quiz: Delete a specified quiz.
+- POST quiz/store-results: store specified quiz results.
+
+
 Inter-service Interactions: Interacts with the analytics service to store quiz results.
 
 #### Analytics Service
 Functionality: Provides insights into quiz performance and personalized recommendations.
 Endpoints:
-- GET /insights: Get performance insights.
-- GET /recommendations: Get tailored recommendations.
-- GET /results: Retrieve quiz results.
-- GET /progress: Track progress over time.
+- GET analytics/analyze: Get the insights from results.
+- GET analytics/analyze-by-quiz: Get the insights from specific quiz.
+- GET analytics/get-score: Get all the results
+- GET analytics/get-score-by-quiz: Get the results for a specific quiz.
+
+
 Inter-service Interactions: Consumes data from the quiz service to generate analytics.
 
 ### Utility Services
