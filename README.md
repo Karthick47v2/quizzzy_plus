@@ -24,9 +24,9 @@ We used Kubernetes for microservices orchestration, ensuring each service is ind
 Functionality: Allows students to upload PDF documents and interact with the chat assistant to clarify doubts.
 Endpoints:
 - `POST chat/upload`: Upload a PDF document.
-- `POST chat/upload`POST chat/query: Chat with assistant.
-- `POST chat/upload`DELETE chat/clear-chat: Clear the chat history.
-- `POST chat/upload`DELETE chat/clear-doc: Clear the uploaded documents.
+- `POST chat/query`: Chat with assistant.
+- `DELETE chat/clear-chat`: Clear the chat history.
+- `DELETE chat/clear-doc`: Clear the uploaded documents.
 
 
 Inter-service Interactions: Communicates with the vector storage and GPT-3.5 model for query processing.
