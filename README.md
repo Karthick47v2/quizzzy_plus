@@ -23,10 +23,10 @@ We used Kubernetes for microservices orchestration, ensuring each service is ind
 #### Chat Service
 Functionality: Allows students to upload PDF documents and interact with the chat assistant to clarify doubts.
 Endpoints:
-- POST chat/upload: Upload a PDF document.
-- POST chat/query: Chat with assistant.
-- DELETE chat/clear-chat: Clear the chat history.
-- DELETE chat/clear-doc: Clear the uploaded documents.
+- `POST chat/upload`: Upload a PDF document.
+- `POST chat/upload`POST chat/query: Chat with assistant.
+- `POST chat/upload`DELETE chat/clear-chat: Clear the chat history.
+- `POST chat/upload`DELETE chat/clear-doc: Clear the uploaded documents.
 
 
 Inter-service Interactions: Communicates with the vector storage and GPT-3.5 model for query processing.
@@ -34,10 +34,10 @@ Inter-service Interactions: Communicates with the vector storage and GPT-3.5 mod
 #### Quiz Service
 Functionality: Generates multiple-choice and true/false questions from uploaded PDFs.
 Endpoints:
-- POST quiz/gen-qa: Upload a PDF document to generate Q&A.
-- GET quiz/get-qa: Retrieve the generated quiz.
-- DELETE quiz/delete-quiz: Delete a specified quiz.
-- POST quiz/store-results: store specified quiz results.
+- `POST quiz/gen-qa`: Upload a PDF document to generate Q&A.
+- `GET quiz/get-qa`: Retrieve the generated quiz.
+- `DELETE quiz/delete-quiz`: Delete a specified quiz.
+- `POST quiz/store-results`: store specified quiz results.
 
 
 Inter-service Interactions: Interacts with the analytics service to store quiz results.
@@ -45,26 +45,26 @@ Inter-service Interactions: Interacts with the analytics service to store quiz r
 #### Analytics Service
 Functionality: Provides insights into quiz performance and personalized recommendations.
 Endpoints:
-- GET analytics/analyze: Get the insights from results.
-- GET analytics/analyze-by-quiz: Get the insights from specific quiz.
-- GET analytics/get-score: Get all the results
-- GET analytics/get-score-by-quiz: Get the results for a specific quiz.
+- `GET analytics/analyze`: Get the insights from results.
+- `GET analytics/analyze-by-quiz`: Get the insights from specific quiz.
+- `GET analytics/get-score`: Get all the results
+- `GET analytics/get-score-by-quiz`: Get the results for a specific quiz.
 
 
 Inter-service Interactions: Consumes data from the quiz service to generate analytics.
 
 ### Utility Services
 #### Discovery Server
-Handles the registration and monitoring of services using Kubernetes.
+- Handles the registration and monitoring of services using Kubernetes.
 
 #### API Gateway
-Implemented with Flask, utilizes Kubernetes ingress support to route requests to the relevant services.
+- Implemented with Flask, utilizes Kubernetes ingress support to route requests to the relevant services.
 
 #### Authentication Service
-Uses Firebase authentication for user management and authorization.
+- Uses Firebase authentication for user management and authorization.
 
 #### Notification Service
-Sends email notifications to users when quiz generation is complete.
+- Sends email notifications to users when quiz generation is complete.
 
 ## User Interface
 ### Implementation Details
@@ -72,4 +72,4 @@ Sends email notifications to users when quiz generation is complete.
 - Back-end: Developed using Python and Flask, containerized with Docker, and orchestrated with Kubernetes.
 
 ### API Testing Tools
-Postman was used extensively to test all API endpoints and ensure their functionality and reliability.
+- Postman was used extensively to test all API endpoints and ensure their functionality and reliability.
