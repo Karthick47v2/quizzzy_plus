@@ -23,28 +23,28 @@ We used the Netflix software stack for microservices implementation, including E
 #### Chat Service
 Functionality: Allows students to upload PDF documents and interact with the chat assistant to clarify doubts.
 Endpoints:
-POST /upload: Upload a PDF document.
-POST /chat: Send a chat message.
-DELETE /clearChat: Clear the chat history.
-DELETE /deleteDocument: Delete the uploaded document.
+- POST /upload: Upload a PDF document.
+- POST /chat: Send a chat message.
+- DELETE /clearChat: Clear the chat history.
+- DELETE /deleteDocument: Delete the uploaded document.
 Inter-service Interactions: Communicates with the vector storage and GPT-3.5 model for query processing.
 
 #### Quiz Service
 Functionality: Generates multiple-choice and true/false questions from uploaded PDFs.
 Endpoints:
-POST /upload: Upload a PDF document.
-POST /generateQuiz: Generate a quiz from the document.
-GET /quiz: Retrieve the generated quiz.
-DELETE /deleteQuiz: Delete a specified quiz.
+- POST /upload: Upload a PDF document.
+- POST /generateQuiz: Generate a quiz from the document.
+- GET /quiz: Retrieve the generated quiz.
+- DELETE /deleteQuiz: Delete a specified quiz.
 Inter-service Interactions: Interacts with the analytics service to store quiz results.
 
 #### Analytics Service
 Functionality: Provides insights into quiz performance and personalized recommendations.
 Endpoints:
-GET /insights: Get performance insights.
-GET /recommendations: Get tailored recommendations.
-GET /results: Retrieve quiz results.
-GET /progress: Track progress over time.
+- GET /insights: Get performance insights.
+- GET /recommendations: Get tailored recommendations.
+- GET /results: Retrieve quiz results.
+- GET /progress: Track progress over time.
 Inter-service Interactions: Consumes data from the quiz service to generate analytics.
 
 ### Utility Services
@@ -62,8 +62,8 @@ Sends email notifications to users when quiz generation is complete.
 
 ## User Interface
 ### Implementation Details
-Front-end: Built using React, Vite, and Tailwind CSS for a responsive and dynamic user interface.
-Back-end: Developed using Python and Flask, containerized with Docker, and orchestrated with Kubernetes.
+- Front-end: Built using React, Vite, and Tailwind CSS for a responsive and dynamic user interface.
+- Back-end: Developed using Python and Flask, containerized with Docker, and orchestrated with Kubernetes.
 
 ### API Testing Tools
 Postman was used extensively to test all API endpoints and ensure their functionality and reliability.
