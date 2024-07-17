@@ -22,6 +22,7 @@ We used Kubernetes for microservices orchestration, ensuring each service is ind
 ### Core Services
 #### Chat Service
 Functionality: Allows students to upload PDF documents and interact with the chat assistant to clarify doubts.
+
 Endpoints:
 - `POST chat/upload`: Upload a PDF document.
 - `POST chat/query`: Chat with assistant.
@@ -33,6 +34,7 @@ Inter-service Interactions: Communicates with the vector storage and GPT-3.5 mod
 
 #### Quiz Service
 Functionality: Generates multiple-choice and true/false questions from uploaded PDFs.
+
 Endpoints:
 - `POST quiz/gen-qa`: Upload a PDF document to generate Q&A.
 - `GET quiz/get-qa`: Retrieve the generated quiz.
@@ -44,6 +46,7 @@ Inter-service Interactions: Interacts with the analytics service to store quiz r
 
 #### Analytics Service
 Functionality: Provides insights into quiz performance and personalized recommendations.
+
 Endpoints:
 - `GET analytics/analyze`: Get the insights from results.
 - `GET analytics/analyze-by-quiz`: Get the insights from specific quiz.
@@ -73,3 +76,22 @@ Inter-service Interactions: Consumes data from the quiz service to generate anal
 
 ### API Testing Tools
 - Postman was used extensively to test all API endpoints and ensure their functionality and reliability.
+
+## Deployment
+### Local Deployment
+1. Clone the repository.
+2. Install Docker and Kubernetes on your local machine.
+3. Use Docker Compose to start all services.
+4. Access the application via localhost.
+
+### Cloud Deployment
+1. Choose a cloud provider (e.g., AWS, GCP, Azure).
+2. Set up a Kubernetes cluster.
+3. Deploy the Docker containers to the cluster.
+4. Configure the Kubernetes ingress to expose the API gateway.
+
+## Source Code
+### Development Challenges
+1. Inconsistent answers from open-source models: Ensuring reliable responses required thorough testing and fine-tuning.
+2. Learning new technologies: Adopting new frameworks and tools such as Kubernetes and RabbitMQ posed a learning curve.
+3. Setting up & configuring RabbitMQ: Configuring RabbitMQ for efficient message brokering involved significant setup and troubleshooting.
