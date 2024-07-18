@@ -7,7 +7,8 @@ Quizy Plus is an educational web application designed to assist students in prep
 - A chat assistant that serves as a study buddy.
 - Detailed analytics and personalized recommendations based on quiz performance.
 
-<img src="archi.png"/>
+<img src="archi.png" width="800px" height="400px"/>
+
 
 ## Design Decisions
 - Microservices Architecture: The application is divided into several microservices to ensure scalability and maintainability.
@@ -22,12 +23,13 @@ We used Kubernetes for microservices orchestration, ensuring each service is ind
 ### Core Services
 #### Chat Service
 Functionality: Allows students to upload PDF documents and interact with the chat assistant to clarify doubts.
-
 Endpoints:
-- `POST chat/upload`: Upload a PDF document.
-- `POST chat/query`: Chat with assistant.
-- `DELETE chat/clear-chat`: Clear the chat history.
-- `DELETE chat/clear-doc`: Clear the uploaded documents.
+| Method | URL                | Description              | Input Parameters | Input Parameters Formats |
+|--------|--------------------|--------------------------|------------------|--------------------------|
+| POST   | `/chat/upload`       | Upload document to chat  | file             | File                     |
+| POST   | `/chat/query`        | Chat with assistant      | message          | string                   |
+| DELETE | `/chat/clear-chat`   | Clear chat history       | -                | -                        |
+| DELETE | `/chat/clear-doc`    | Clear uploaded documents | -                | -                        |
 
 
 Inter-service Interactions: Communicates with the vector storage and GPT-3.5 model for query processing.
@@ -36,10 +38,12 @@ Inter-service Interactions: Communicates with the vector storage and GPT-3.5 mod
 Functionality: Generates multiple-choice and true/false questions from uploaded PDFs.
 
 Endpoints:
-- `POST quiz/gen-qa`: Upload a PDF document to generate Q&A.
-- `GET quiz/get-qa`: Retrieve the generated quiz.
-- `DELETE quiz/delete-quiz`: Delete a specified quiz.
-- `POST quiz/store-results`: store specified quiz results.
+| Method | URL                | Description              | Input Parameters | Input Parameters Formats |
+|--------|--------------------|--------------------------|------------------|--------------------------|
+| POST   | `/quiz/gen-qa`       | Upload a document to generate Q&A             | file             | File                     |
+| GET    | `/quiz/get-qa`       | Retrieve the generated Q&A                  | -                | -                        |
+| DELETE | `/quiz/delete-quiz`  | Delete a specified quiz    | quiz_id          | string                   |
+| POST   | `/quiz/store-results`| Store specified quiz results | results        | Array of objects with each object containing 'question' and 'score' |
 
 
 Inter-service Interactions: Interacts with the analytics service to store quiz results.
@@ -48,10 +52,12 @@ Inter-service Interactions: Interacts with the analytics service to store quiz r
 Functionality: Provides insights into quiz performance and personalized recommendations.
 
 Endpoints:
-- `GET analytics/analyze`: Get the insights from results.
-- `GET analytics/analyze-by-quiz`: Get the insights from specific quiz.
-- `GET analytics/get-score`: Get all the results
-- `GET analytics/get-score-by-quiz`: Get the results for a specific quiz.
+| Method | URL                     | Description                   | Input Parameters | Input Parameters Formats |
+|--------|-------------------------|-------------------------------|------------------|--------------------------|
+| GET    | `/analytics/analyze`      | Get insights from results     | -                | -                        |
+| POST   | `/analytics/analyze-by-quiz` | Get insights from a specific quiz | quiz_id         | string                   |
+| POST   | `/analytics/get-score`    | Get all results               | -                | -                        |
+| DELETE | `/analytics/get-score-by-quiz` | Get results for a specific quiz | quiz_id         | string                   |
 
 
 Inter-service Interactions: Consumes data from the quiz service to generate analytics.
@@ -61,7 +67,7 @@ Inter-service Interactions: Consumes data from the quiz service to generate anal
 - Handles the registration and monitoring of services using Kubernetes.
 
 #### API Gateway
-- Implemented with Flask, utilizes Kubernetes ingress support to route requests to the relevant services.
+- Implemented with Flask, uses Kubernetes ingress support to route requests to the relevant services.
 
 #### Authentication Service
 - Uses Firebase authentication for user management and authorization.
@@ -95,3 +101,5 @@ Inter-service Interactions: Consumes data from the quiz service to generate anal
 1. Inconsistent answers from open-source models: Ensuring reliable responses required thorough testing and fine-tuning.
 2. Learning new technologies: Adopting new frameworks and tools such as Kubernetes and RabbitMQ posed a learning curve.
 3. Setting up & configuring RabbitMQ: Configuring RabbitMQ for efficient message brokering involved significant setup and troubleshooting.
+
+**References**
