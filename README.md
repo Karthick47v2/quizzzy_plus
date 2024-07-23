@@ -103,3 +103,9 @@ Inter-service Interactions: Consumes data from the quiz service to generate anal
 3. Setting up & configuring RabbitMQ: Configuring RabbitMQ for efficient message brokering involved significant setup and troubleshooting.
 
 **References**
+- F. Tapia, M. Á. Mora, W. Fuertes, H. Aules, E. Flores, and T. Toulkeridis, “From Monolithic Systems to Microservices: A Comparative Study of Performance,” Applied Sciences, vol. 10, no. 17, p. 5797, Aug. 2020, doi: https://doi.org/10.3390/app10175797.
+- freeCodeCamp.org, “Microservice Architecture and System Design with Python & Kubernetes – Full Course,” YouTube, Nov. 08, 2022. https://www.youtube.com/watch?v=hmkF77F9TLw&t=4980s.
+- “Tutorials,” Kubernetes. https://kubernetes.io/docs/tutorials/
+- Docker, “Overview of Docker Compose,” Docker Documentation, Feb. 10, 2020. https://docs.docker.com/compose/
+- “RabbitMQ Documentation | RabbitMQ,” www.rabbitmq.com. https://www.rabbitmq.com/docs
+- “Installation: Tailwind CLI - Tailwind CSS,” tailwindcss.com. https://tailwindcss.com/docs/installation
