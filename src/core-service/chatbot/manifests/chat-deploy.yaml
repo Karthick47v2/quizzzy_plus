@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gateway
+  name: chat
   labels:
-    app: gateway
+    app: chat
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gateway
+      app: chat
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -16,14 +16,16 @@ spec:
   template:
     metadata:
       labels:
-        app: gateway
+        app: chat
     spec:
       containers:
-        - name: gateway
-          image: gateway
+        - name: chat
+          image: chat
           imagePullPolicy: Never
+          ports:
+            - containerPort: 5001
           envFrom:
             - configMapRef:
-                name: gateway-configmap
+                name: chat-configmap
             - secretRef:
-                name: gateway-secret
+                name: chat-secret

@@ -1,0 +1,6 @@
+llama-index
+llama-index-vector-stores-qdrant
+llama-index-postprocessor-rankgpt-rerank
+pyrebase4
+Flask==3.0.3
+Flask-Cors==4.0.1

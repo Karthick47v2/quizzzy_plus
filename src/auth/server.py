@@ -1,80 +1,70 @@
-import jwt
-import datetime
 import os
+import requests
+import json
 from flask import Flask, request
-from flask_mysqldb import MySQL
-from dotenv import load_dotenv
-
-load_dotenv()
+from flask_cors import CORS
+import pyrebase
 
 server = Flask(__name__)
-server.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET')
-mysql = MySQL(server)
+CORS(server, resources={r"/*": {"origins": "*"}})
 
-server.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST')
-server.config['MYSQL_USER'] = os.environ.get('MYSQL_USER')
-server.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD')
-server.config['MYSQL_DB'] = os.environ.get('MYSQL_DB')
-server.config['MYSQL_PORT'] = os.environ.get('MYSQL_PORT')
+server.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET')
+
+firebase_config = {
+    'apiKey': "AIzaSyAyTNs5FQxsCtjP3HcSwBbtq2DvKp1CWWQ",
+    'authDomain': "quizzzy-plus.firebaseapp.com",
+    'projectId': "quizzzy-plus",
+    'storageBucket': "quizzzy-plus.appspot.com",
+    'messagingSenderId': "403474519501",
+    'appId': "1:403474519501:web:82cfabebbd8beaea53e084",
+    'databaseURL': "https://quizzzy-plus-default-rtdb.firebaseio.com/"
+}
+
+firebase = pyrebase.initialize_app(firebase_config)
+
+auth = firebase.auth()
+
+
+@server.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    try:
+        auth.create_user_with_email_and_password(
+            email, password)
+        user = auth.sign_in_with_email_and_password(
+            email, password)
+        auth.update_profile(user['idToken'], display_name=username)
+        return 'Registration successful', 200
+    except requests.HTTPError as e:
+        error_json = e.args[1]
+        error = json.loads(error_json)['error']['message']
+        if error == "EMAIL_EXISTS":
+            return "Email already exists", 403
+        return "Registration failed: " + str(e), 403
+    except Exception as e:
+        return "Registration failed: " + str(e), 403
 
 
 @server.route('/login', methods=['POST'])
 def login():
-    auth = request.authorization
-
-    if not auth:
-        return 'missing credentials', 401
-
-    cur = mysql.connection.cursor()
-    res = cur.execute(
-        'SELELCT email, password FROM user WHERE email=%s', (auth.username,)
-    )
-
-    if res > 0:
-        user_row = cur.fetchone()
-        email = user_row[0]
-        password = user_row[1]
-
-        if auth.username != email or auth.password != password:
-            return 'invalid credentials', 401
-        else:
-            return create_jwt(auth.username, os.environ.get('FLASK_SECRET'), True)
-
-    else:
-        return 'invalid credentials', 401
-
-
-@server.route('/validate', methods=['POST'])
-def validate():
-    encoded_jwt = request.headers['Authorization']
-
-    if not encoded_jwt:
-        return 'missing credentials', 401
-
-    encoded_jwt = encoded_jwt.split(' ')[1]
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
 
     try:
-        decoded = jwt.decode(encoded_jwt, os.environ.get(
-            'FLASK_SECRET'), algorithm=['HS256'])
-    except:
-        return 'not authorized', 403
+        user = auth.sign_in_with_email_and_password(
+            email, password)
 
-    return decoded, 200
-
-
-def create_jwt(username, secret, authz):
-    return jwt.encode(
-        {
-            'username': username,
-            'exp': datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1),
-            'iat': datetime.datetime.now(tz=datetime.timezone.utc),
-            'admin': authz,
-        },
-        secret,
-        algorithm='HS256',
-
-    )
+        return user['idToken'], 200
+    except requests.HTTPError as e:
+        return "Login failed: " + str(e), 403
+    except Exception as e:
+        return "Login failed: " + str(e), 403
 
 
 if __name__ == '__main__':
-    server.run(host='0.0.0.0', port=5000)
+    server.run(host='0.0.0.0', port=5000, debug=True)

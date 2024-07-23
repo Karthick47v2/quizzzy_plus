@@ -5,7 +5,7 @@ metadata:
   labels:
     app: auth
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: auth
@@ -20,7 +20,8 @@ spec:
     spec:
       containers:
         - name: auth
-          image: karthick47/auth
+          image: auth
+          imagePullPolicy: Never
           ports:
             - containerPort: 5000
           envFrom:
