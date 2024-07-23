@@ -171,6 +171,21 @@ def delete_quiz():
     except Exception as e:
         return str(e), 403
     
+@app.route('/quiz/store-results', methods=['POST'])
+def store_results():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+        results = data.get('results', [])
+
+        user_results_ref = db.child('results').child(user_id)
+        user_results_ref.push(results)
+
+        return 'Results stored', 200
+
+    except Exception as e:
+        return str(e), 403
+    
 if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
