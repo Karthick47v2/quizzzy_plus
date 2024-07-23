@@ -153,6 +153,39 @@ def get_qa():
     except Exception as e:
         print(e)
         return str(e), 403
+    
+@app.route('/quiz/delete-quiz', methods=['DELETE'])
+def delete_quiz():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+        quiz_id = data.get('quiz_id', '')
+
+        quiz_ref = db.child('qa').child(user_id).child(quiz_id)
+        if quiz_ref.get().val():
+            quiz_ref.remove()
+            return 'Quiz deleted', 200
+        else:
+            return 'Quiz not found', 404
+
+    except Exception as e:
+        return str(e), 403
+
+
+@app.route('/quiz/store-results', methods=['POST'])
+def store_results():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+        results = data.get('results', [])
+
+        user_results_ref = db.child('results').child(user_id)
+        user_results_ref.push(results)
+
+        return 'Results stored', 200
+
+    except Exception as e:
+        return str(e), 403
 
 
 if __name__ == '__main__':
