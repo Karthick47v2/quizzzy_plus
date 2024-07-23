@@ -1,58 +1,47 @@
+import pyrebase
 import json
 import random
 import PyPDF2
-import firebase_admin
-from firebase_admin import credentials, firestore, storage
-import datetime
-import requests
-from flask import Flask, request, jsonify
-from llama_index.llms.llama_cpp import LlamaCPP
-from llama_index.llms.llama_cpp.llama_utils import (
-    messages_to_prompt,
-    completion_to_prompt,
-)
 import os
-import subprocess
+from flask import Flask, jsonify, request
+from llama_index.llms.openai import OpenAI
+from multiprocessing import Pool
+from dotenv import load_dotenv
 
-# set environment variables for CUDA support
-os.environ['CMAKE_ARGS'] = '-DLLAMA_CUBLAS=on'
-os.environ['FORCE_CMAKE'] = '1'
+load_dotenv()
 
-try:
-    subprocess.check_call(['pip', 'install', '-r', 'requirements.txt'])
-    print("Installation successful!")
-except subprocess.CalledProcessError as e:
-    print(f"Installation failed with error: {e}")
-    
-llm = LlamaCPP(
-    model_url="https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf",
-    model_path=None,
-    temperature=0.1,
-    max_new_tokens=256,
-    context_window=3900,
-    generate_kwargs={},
-    model_kwargs={"n_gpu_layers": 1},
-    messages_to_prompt=messages_to_prompt,
-    completion_to_prompt=completion_to_prompt,
-    verbose=True,
-)
+
+firebase_config = {
+    'apiKey': "AIzaSyAyTNs5FQxsCtjP3HcSwBbtq2DvKp1CWWQ",
+    'authDomain': "quizzzy-plus.firebaseapp.com",
+    'projectId': "quizzzy-plus",
+    'storageBucket': "quizzzy-plus.appspot.com",
+    'messagingSenderId': "403474519501",
+    'appId': "1:403474519501:web:82cfabebbd8beaea53e084",
+    'databaseURL': "https://quizzzy-plus-default-rtdb.firebaseio.com/"
+}
+
+firebase = pyrebase.initialize_app(firebase_config)
+storage = firebase.storage()
+db = firebase.database()
+
+
+llm = OpenAI(model="gpt-3.5-turbo-0125", temperature=0.7, max_tokens=512)
 
 app = Flask(__name__)
 
-cred = credentials.Certificate('path/to/service-account.json') 
-firebase_admin.initialize_app(cred)
+UPLOAD_FOLDER = 'qapdf'
 
-db = firestore.client()
-storage = storage.bucket()
 
 def extract_text_from_pdf(pdf_file):
-    with pdf_file as file:
+    with open(pdf_file, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         text = ''
         for page_num in range(len(reader.pages)):
             page = reader.pages[page_num]
             text += page.extract_text()
     return text
+
 
 def chunk_text(text, chunk_size=512):
     chunks = []
@@ -61,96 +50,129 @@ def chunk_text(text, chunk_size=512):
         chunks.append(" ".join(words[i:i+chunk_size]))
     return chunks
 
+
 def limit_mcq_options(mcq_json):
     """Limits MCQ options to four, ensuring at least one distractor."""
-    mcq_json["options"] = random.sample(mcq_json["options"], k=4)  # shuffle and take 4
+    mcq_json["options"] = random.sample(
+        mcq_json["options"], k=4)  # shuffle and take 4
     if mcq_json["answer"] not in mcq_json["options"]:
         mcq_json["options"][0] = mcq_json["answer"]
     return mcq_json
 
-def generate_questions_json(text_chunks, llm):
 
-  results = {
+def generate_question(mcq, tf):
+    mcq_dict, tf_dict = None, None
+    response_mcq = llm.complete(mcq)
+    try:
+        mcq_dict = json.loads(response_mcq.text)
+    except json.JSONDecodeError:
+        pass
+
+    response_tf = llm.complete(tf)
+    try:
+        tf_dict = json.loads(response_tf.text)
+    except json.JSONDecodeError:
+        pass
+    return mcq_dict, tf_dict
+
+
+def generate_questions_json(text_chunks):
+    text_chunks = text_chunks[:3]
+    results = {
         "mcq_questions": [],
         "true_false_questions": []
-  }
+    }
+    generated_questions = set()
 
-  used_chunks = set()
-  generated_questions = set()
+    mcq_prompts = [f"""Generate a JSON-formatted response with a multiple-choice question (MCQ) based on this passage. Include the following:
+                     * **question:** The question text (ask about a specific fact or ask to identify the INCORRECT statement).
+                     * **options:** An array of four possible answer choices. Include ONE correct answer and three plausible distractors.
+                     * **answer:** The single correct answer (marked within the 'options' array).
+                     Passage: {chunk}""" for chunk in text_chunks]
 
-  # generate 5 sets of questions
-  for _ in range(5):
-    # stop if no unique chunks left
-    if len(used_chunks) == len(text_chunks):
-            break
+    tf_prompts = [f"""Generate a JSON-formatted response with a true/false statement based on this passage. Include the following:
+                     * **statement:** A statement that is clearly true or false.
+                     * **answer:** 'True' or 'False'.
+                     Passage: {chunk}""" for chunk in text_chunks]
 
-    chunk = random.choice(list(set(text_chunks) - used_chunks))
-    used_chunks.add(chunk)
+    prompts = [(mcq_prompts[i], tf_prompts[i])
+               for i in range(len(text_chunks))]
 
-    prompt_mcq = f"""Generate a JSON-formatted response with a multiple-choice question (MCQ) based on this passage. Include the following:
-                 * **question:** The question text (ask about a specific fact or ask to identify the INCORRECT statement).
-                 * **options:** An array of four possible answer choices. Include ONE correct answer and three plausible distractors.
-                 * **answer:** The single correct answer (marked within the 'options' array).
-                 Passage: {chunk}"""
+    with Pool() as pool:
+        for mcq_json, tf_json in pool.starmap(generate_question, prompts):
+            # MCQ
+            if mcq_json:
+                mcq_json = limit_mcq_options(mcq_json)
+                if mcq_json["question"] not in generated_questions:
+                    generated_questions.add(mcq_json["question"])
+                    results["mcq_questions"].append(mcq_json)
 
-    prompt_true_false = f"""Generate a JSON-formatted response with a true/false statement based on this passage. Include the following:
-                        * **statement:** A statement that is clearly true or false.
-                        * **answer:** 'True' or 'False'.
-                        Passage: {chunk} """
+            # True/False
+            if tf_json and tf_json["statement"] not in generated_questions:
+                generated_questions.add(tf_json["statement"])
+                results["true_false_questions"].append(tf_json)
+
+    return results
 
 
-    # MCQ
-    response_mcq = llm.complete(prompt_mcq)
-    response_mcq_dict = json.loads(response_mcq.json())
-    json_mcq_text = response_mcq_dict["text"]
-    mcq_json = json.loads(json_mcq_text)
-
-    mcq_json = limit_mcq_options(mcq_json)
-
-    # duplication check
-    if mcq_json["question"] not in generated_questions:
-      generated_questions.add(mcq_json["question"])
-      results["mcq_questions"].append(mcq_json)
-
-    # True/False
-    response_tf = llm.complete(prompt_true_false)
-    response_tf_dict = json.loads(response_tf.json())
-    json_tf_text = response_tf_dict["text"]
-    tf_json = json.loads(json_tf_text)
-
-    # duplication check
-    if tf_json["statement"] not in generated_questions:
-      generated_questions.add(tf_json["statement"])
-      results["true_false_questions"].append(tf_json)
-
-  return results
-
-@app.route('/generate-questions', methods=['POST'])
+@app.route('/gen_qa', methods=['POST'])
 def generate_questions():
-    if 'files' not in request.files:
-        return jsonify({'error': 'No files uploaded'}), 400
-
-    user_id = 123 # TODO: assumed a user id -> get user id
-
     try:
-        # store PDFs in Firebase Storage
+        data = request.json
+        user_id = data.get('user_id', '')
+        filename = data.get('data', '').get('filename', '')
+
+        storage.child(filename).download(path='', filename=filename)
+
+        user_id = 123
         text_chunks = []
-        for file in request.files.getlist('files'):
-            if file.filename.endswith('.pdf'):
-                blob = storage.blob(f'users/{user_id}/{file.filename}')
-                # signed URL with expiration time (1 hour)
-                expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-                signed_url = blob.generate_signed_url(expiration)
-                response = requests.get(signed_url)
-                text_chunks.extend(chunk_text(extract_text_from_pdf(response.content)))
+        text_chunks.extend(chunk_text(extract_text_from_pdf('temp.pdf')))
 
-        generated_questions_json = generate_questions_json(text_chunks, llm)
+        generated_questions_json = generate_questions_json(text_chunks)
 
-        return generated_questions_json
+        db.child('qa').child(user_id).set(generated_questions_json)
+
+        if os.path.exists(filename):
+            os.remove(filename)
+
+        return 'Questions generated', 200
 
     except Exception as e:
-        return jsonify({'error': f'Error processing PDFs: {str(e)}'}), 500
+        return str(e), 403
 
 
+@app.route('/get_qa', methods=['POST'])
+def get_qa():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+        results = db.child('qa').child(user_id).get().val()
+
+        return jsonify(results), 200
+
+    except Exception as e:
+        print(e)
+        return str(e), 403
+
+@app.route('/quiz/delete-quiz', methods=['DELETE'])
+def delete_quiz():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+        quiz_id = data.get('quiz_id', '')
+
+        quiz_ref = db.child('qa').child(user_id).child(quiz_id)
+        if quiz_ref.get().val():
+            quiz_ref.remove()
+            return 'Quiz deleted', 200
+        else:
+            return 'Quiz not found', 404
+
+    except Exception as e:
+        return str(e), 403
+    
 if __name__ == '__main__':
-    app.run(debug=True) 
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
+    app.run(host='0.0.0.0', port=5002, debug=True)
