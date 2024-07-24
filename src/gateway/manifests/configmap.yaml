@@ -4,3 +4,4 @@ metadata:
   name: gateway-configmap
 data:
   AUTH_SERVICE_URI: "auth:5000"
+  CHAT_SERVICE_URI: "chat:5001"

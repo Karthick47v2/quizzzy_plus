@@ -1,0 +1,5 @@
+PyPDF2
+llama-index
+requests
+Flask
+firebase-admin

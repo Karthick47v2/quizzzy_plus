@@ -10,6 +10,6 @@ COPY ./requirements.txt /app
 RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY . /app
 
-EXPOSE 8080
+EXPOSE 5001
 
-CMD ["python3", "-u", "server.py"]
+CMD ["python3", "-u", "app.py"]
