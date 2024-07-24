@@ -17,7 +17,7 @@ from collections import defaultdict
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
+import datetime
 import os
 import pyrebase
 
@@ -33,6 +33,7 @@ firebase_config = {
 
 firebase = pyrebase.initialize_app(firebase_config)
 storage = firebase.storage()
+db = firebase.database()
 
 UPLOAD_FOLDER = 'chatpdf'
 
@@ -130,11 +131,67 @@ def process_query():
                                                        RankGPTRerank(top_n=3, llm=OpenAI(
                                                            model="gpt-3.5-turbo-0125"))
                                                    ])
-
+                
             response = chat_engine.chat(query)
+
+            # Store query history in Firebase
+            history_data = {
+                "filename": data.get('filename', ''),
+                "time": datetime.datetime.now().isoformat(),
+                "query": query,
+                "answer": response.response
+            }
+            db.child("query_history").child(user_id).push(history_data)
+
             return jsonify(response.response), 200
         else:
             return 'No query provided', 403
+    except Exception as e:
+        return str(e), 403
+
+
+@app.route('/delete_file', methods=['POST'])
+def delete_file():
+    try:
+        data = request.json
+        filename = data.get('filename', '')
+
+        # Delete file from Firebase storage
+        storage.delete(filename)
+
+        return 'File deleted', 200
+    except Exception as e:
+        return str(e), 403
+
+
+#delete all history of user
+@app.route('/delete_history', methods=['POST'])
+def delete_history():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+
+        # Delete all chat history of the user from Firebase
+        db.child("query_history").child(user_id).remove()
+
+        return 'Chat history deleted', 200
+    except Exception as e:
+        return str(e), 403
+    
+
+@app.route('/get_history', methods=['POST'])
+def get_history():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+
+        # Retrieve user history from Firebase and sort by time in ascending order
+        user_history = db.child("query_history").child(user_id).get().val()
+        if user_history:
+            sorted_history = sorted(user_history.items(), key=lambda x: x[1]['time'])
+            return jsonify([history[1] for history in sorted_history]), 200
+        else:
+            return 'No history found', 200
     except Exception as e:
         return str(e), 403
 
