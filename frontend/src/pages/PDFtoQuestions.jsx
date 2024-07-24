@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import QuizElement from '../components/QuizElement';
 import { quizzes } from '../../testquiz.js';
+import { Navigate } from 'react-router-dom';
 
 const PDFtoQuestions = () => {
   const [file, setFile] = useState(null);
@@ -8,14 +9,29 @@ const PDFtoQuestions = () => {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [quizlist, setQuizlist] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]);
+  const [error, setError] = useState('');
 
-  // console.log(userAnswers);
+  useEffect(() => {}, []);
 
-  useEffect(() => {
-    //call api for generating questions
-    setFileUploaded(true);
-    setQuizlist(quizzes);
-  }, []);
+  const generateQuizes = async () => {
+    try {
+      const response = await fetch('http://quizzzy.com/generate-qa'); //api call for qa generation
+
+      if (response.ok) {
+        // const quizzes = response.text()
+        // setQuizlist(quizzes);
+        // setUploading(false);
+        // setFileUploaded(true);
+        return;
+      } else {
+        setError(response.statusText);
+        return;
+      }
+    } catch (error) {
+      setError(error.message);
+      return;
+    }
+  };
 
   return (
     <>
@@ -31,11 +47,15 @@ const PDFtoQuestions = () => {
                   type="file"
                   className="file-input file-input-sm file-input-bordered w-full max-w-xs join-item"
                   accept=".pdf"
+                  onChange={(e) => {
+                    setFile(e.target.files[0]);
+                  }}
                 />
                 <div className="indicator">
                   <button
                     className="btn btn-sm btn-primary text-white fon join-item font-semibold"
                     disabled={!file && uploading}
+                    onSubmit={generateQuizes}
                   >
                     Generate
                   </button>
@@ -77,6 +97,7 @@ const PDFtoQuestions = () => {
               <button
                 className="btn btn-neutral text-white"
                 disabled={userAnswers.length !== quizlist.length}
+                onSubmit={Navigate('/analytics', { quizId: 12 })}
               >
                 Submit
               </button>

@@ -14,6 +14,7 @@ import Home from './pages/Home';
 import DashboardLayout from './pages/Layouts/DashboardLayout';
 import PDFtoQuestions from './pages/PDFtoQuestions';
 import ChatBot from './pages/ChatBot';
+import Analytics from './pages/Analytics';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -22,8 +23,9 @@ const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route element={<DashboardLayout />}>
-        <Route path="/pdf2qa" element={<PDFtoQuestions />} />
+        <Route path="/doc2qa" element={<PDFtoQuestions />} />
         <Route path="/chatbot" element={<ChatBot />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Route>
     </Route>
   )
