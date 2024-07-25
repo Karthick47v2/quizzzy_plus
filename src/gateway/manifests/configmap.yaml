@@ -5,3 +5,5 @@ metadata:
 data:
   AUTH_SERVICE_URI: "auth:5000"
   CHAT_SERVICE_URI: "chat:5001"
+  QUIZ_SERVICE_URI: "quiz:5002"
+  ANALYTICS_SERVICE_URI: "quiz:5003"

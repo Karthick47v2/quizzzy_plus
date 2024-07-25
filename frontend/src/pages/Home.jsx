@@ -18,7 +18,7 @@ const Home = () => {
               accurate and engaging.
             </p>
             <Link to="/login">
-              <button className="btn btn-primary text-lg font-semibold">
+              <button className="btn btn-primary text-md font-semibold">
                 Get Started
                 <FaArrowRight />
               </button>

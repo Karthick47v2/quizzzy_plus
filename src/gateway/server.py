@@ -49,15 +49,81 @@ def register():
     return res.text, res.status_code
 
 
-@server.route('/chatbot/<path:path>', methods=['POST'])
+@server.route('/chatbot/<path:path>', methods=['POST', 'DELETE'])
 def chatbot_route(path):
     auth_header = request.headers.get('Authorization')
 
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split('Bearer ')[1]
-        user_id = auth.get_account_info(token)['users'][0]['email']
-        res = requests.post(
-            f'http://{os.environ.get("CHAT_SERVICE_URI")}/{path}', json={'user_id': user_id, 'data': request.json})
+        user_id = auth.get_account_info(token)['users'][0]['localId']
+
+        payload = {'user_id': user_id}
+        if request.method == 'POST':
+            payload['data'] = request.json
+
+        url = f'http://{os.environ.get("CHAT_SERVICE_URI")}/{path}'
+        res = requests.request(method=request.method, url=url, json=payload)
+
+        # res = requests.post(
+        #     f'http://{os.environ.get("CHAT_SERVICE_URI")}/{path}', json={'user_id': user_id, 'data': request.json})
+        return res.text, res.status_code
+    else:
+        return 'Unauthorized', 401
+
+
+# @server.route('/chatbot/<path:path>', methods=['DELETE'])
+# def chatbot_route(path):
+#     auth_header = request.headers.get('Authorization')
+
+#     if auth_header and auth_header.startswith('Bearer '):
+#         token = auth_header.split('Bearer ')[1]
+#         user_id = auth.get_account_info(token)['users'][0]['localId']
+#         res = requests.post(
+#             f'http://{os.environ.get("CHAT_SERVICE_URI")}/{path}', json={'user_id': user_id})
+#         return res.text, res.status_code
+#     else:
+#         return 'Unauthorized', 401
+
+
+@server.route('/quiz/<path:path>', methods=['POST', 'GET', 'DELETE'])
+def quiz_route(path):
+    auth_header = request.headers.get('Authorization')
+
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split('Bearer ')[1]
+        user_id = auth.get_account_info(token)['users'][0]['localId']
+        # res = requests.post(
+        #     f'http://{os.environ.get("QUIZ_SERVICE_URI")}/{path}', json={'user_id': user_id, 'data': request.json})
+
+        url = f'http://{os.environ.get("QUIZ_SERVICE_URI")}/{path}'
+
+        if request.method == 'GET':
+            res = requests.get(url, params={'user_id': user_id})
+        else:
+            payload = {'user_id': user_id, 'data': request.json}
+            res = requests.post(url, json=payload)
+
+        return res.text, res.status_code
+    else:
+        return 'Unauthorized', 401
+
+
+@server.route('/analytics/<path:path>', methods=['POST', 'GET'])
+def analytics_route(path):
+    auth_header = request.headers.get('Authorization')
+
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split('Bearer ')[1]
+        user_id = auth.get_account_info(token)['users'][0]['localId']
+
+        url = f'http://{os.environ.get("ANALYTICS_SERVICE_URI")}/{path}'
+
+        if request.method == 'GET':
+            res = requests.get(url, params={'user_id': user_id})
+        else:
+            payload = {'user_id': user_id, 'data': request.json}
+            res = requests.post(url, json=payload)
+
         return res.text, res.status_code
     else:
         return 'Unauthorized', 401

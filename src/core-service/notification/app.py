@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import smtplib, os
 from email.message import EmailMessage
 
 app = Flask(__name__)
-
-os.environ["GMAIL_ADDRESS"] = "gowreeshan1@gmail.com"
-os.environ["GMAIL_PASSWORD"] = "nglk spuo vkmb oehz"
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 EMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")
 EMAIL_PASSWORD = os.environ.get("GMAIL_PASSWORD")

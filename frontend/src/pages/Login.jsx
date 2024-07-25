@@ -27,7 +27,8 @@ const Login = () => {
 
       if (response.ok) {
         const token = await response.text();
-        return navigate('/chatbot', { state: { token: token } });
+        localStorage.setItem('userToken', token);
+        return navigate('/chatbot');
       } else {
         setError(response.statusText);
       }
