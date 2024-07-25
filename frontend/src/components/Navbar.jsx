@@ -1,6 +1,7 @@
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import { SiChatbot } from 'react-icons/si';
 import { FaFilePdf } from 'react-icons/fa6';
+import { MdAnalytics } from 'react-icons/md';
 import { useLocation } from 'react-router-dom';
 
 import { Link } from 'react-router-dom';
@@ -19,15 +20,25 @@ const Navbar = () => {
             <div className="hidden md:block font-semibold text-sm">Chatbot</div>
           </div>
         </Link>
-        <Link to="/pdf2qa">
+        <Link to="/doc2qa">
           <div
             className={`flex justify-center items-center gap-1 p-3 hover:bg-primary ${
-              pathname === '/pdf2qa' ? 'bg-primary/50' : ''
+              pathname === '/doc2qa' ? 'bg-primary/50' : ''
             }`}
           >
             <FaFilePdf size={15} />
+            <div className="hidden md:block font-semibold text-sm">Doc2QA</div>
+          </div>
+        </Link>
+        <Link to="/analytics">
+          <div
+            className={`flex justify-center items-center gap-1 p-3 hover:bg-primary ${
+              pathname === '/analytics' ? 'bg-primary/50' : ''
+            }`}
+          >
+            <MdAnalytics size={15} />
             <div className="hidden md:block font-semibold text-sm">
-              PDF to QA
+              Analytics
             </div>
           </div>
         </Link>
