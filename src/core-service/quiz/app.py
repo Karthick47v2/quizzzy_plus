@@ -6,9 +6,6 @@ import os
 from flask import Flask, jsonify, request
 from llama_index.llms.openai import OpenAI
 from multiprocessing import Pool
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 firebase_config = {
@@ -30,7 +27,7 @@ llm = OpenAI(model="gpt-3.5-turbo-0125", temperature=0.7, max_tokens=512)
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'qapdf'
+UPLOAD_FOLDER = 'quizpdf'
 
 
 def extract_text_from_pdf(pdf_file):
@@ -77,7 +74,7 @@ def generate_question(mcq, tf):
 
 
 def generate_questions_json(text_chunks):
-    text_chunks = text_chunks[:3]
+    text_chunks = text_chunks
     results = {
         "mcq_questions": [],
         "true_false_questions": []
@@ -115,7 +112,7 @@ def generate_questions_json(text_chunks):
     return results
 
 
-@app.route('/gen_qa', methods=['POST'])
+@app.route('/gen-qa', methods=['POST'])
 def generate_questions():
     try:
         data = request.json
@@ -123,10 +120,7 @@ def generate_questions():
         filename = data.get('data', '').get('filename', '')
 
         storage.child(filename).download(path='', filename=filename)
-
-        user_id = 123
-        text_chunks = []
-        text_chunks.extend(chunk_text(extract_text_from_pdf('temp.pdf')))
+        text_chunks = chunk_text(extract_text_from_pdf(filename))
 
         generated_questions_json = generate_questions_json(text_chunks)
 
@@ -141,20 +135,46 @@ def generate_questions():
         return str(e), 403
 
 
-@app.route('/get_qa', methods=['POST'])
+@app.route('/get-qa', methods=['GET'])
 def get_qa():
     try:
-        data = request.json
+        data = request.args
         user_id = data.get('user_id', '')
         results = db.child('qa').child(user_id).get().val()
 
         return jsonify(results), 200
 
     except Exception as e:
-        print(e)
         return str(e), 403
-    
-@app.route('/quiz/delete-quiz', methods=['DELETE'])
+
+
+# @app.route('/delete-quiz', methods=['POST'])
+# def delete_quiz():
+#     try:
+#         data = request.json
+#         user_id = data.get('user_id', '')
+#         db.child("qa").child(user_id).remove()
+
+#         return 'Quiz deleted', 200
+
+#     except Exception as e:
+#         return str(e), 403
+
+
+# @app.route('/store-results', methods=['POST'])
+# def store_results():
+#     try:
+#         data = request.json
+#         user_id = data.get('user_id', '')
+#         results = data.get('data', '').get('results', '')
+#         db.child('results').child(user_id).set(results)
+
+#         return 'Success', 200
+
+#     except Exception as e:
+#         return str(e), 403
+
+@app.route('/delete-quiz', methods=['DELETE'])
 def delete_quiz():
     try:
         data = request.json
@@ -172,7 +192,7 @@ def delete_quiz():
         return str(e), 403
 
 
-@app.route('/quiz/store-results', methods=['POST'])
+@app.route('/store-results', methods=['POST'])
 def store_results():
     try:
         data = request.json

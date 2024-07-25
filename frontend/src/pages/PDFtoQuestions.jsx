@@ -9,8 +9,6 @@ const PDFtoQuestions = () => {
   const [quizlist, setQuizlist] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]);
 
-  // console.log(userAnswers);
-
   useEffect(() => {
     //call api for generating questions
     setFileUploaded(true);

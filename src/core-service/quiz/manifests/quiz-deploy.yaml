@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quiz
+  labels:
+    app: quiz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quiz
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: quiz
+    spec:
+      containers:
+        - name: quiz
+          image: quiz
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5002
+          envFrom:
+            - configMapRef:
+                name: quiz-configmap
+            - secretRef:
+                name: quiz-secret

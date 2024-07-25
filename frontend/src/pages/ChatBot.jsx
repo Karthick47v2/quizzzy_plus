@@ -7,11 +7,9 @@ import { IoIosRemoveCircle } from 'react-icons/io';
 
 import ChatElement from '../components/ChatElement';
 import { storage } from '../utils/firebaseConfig';
-import { useLocation } from 'react-router-dom';
 
 const ChatBot = () => {
-  const { state } = useLocation();
-  const { token } = state || {};
+  const token = localStorage.getItem('userToken');
 
   const [chats, setChats] = useState([]);
   const [userInputText, setUserInputText] = useState('');
@@ -85,6 +83,10 @@ const ChatBot = () => {
     fileInputRef.current.value = null;
     setFile(null);
     setFileUploaded(false);
+    setChats([]);
+  };
+
+  const resetChat = () => {
     setChats([]);
   };
 
@@ -355,12 +357,18 @@ const ChatBot = () => {
       </div>
 
       <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] md:w-[60%] lg:w-[50%] flex items-center justify-center">
+      <button
+            className="btn btn-warning rounded-l-md rounded-none"
+            onClick={resetChat}
+          >
+            Clear Chat  
+          </button>
         <form className="w-full" onSubmit={handleTextSubmit}>
           <div className="flex">
             <input
               type="text"
               placeholder="Message Quizzy..."
-              className="input rounded-none rounded-l-md input-bordered input-primary w-full "
+              className="input rounded-none rounded-none input-bordered input-primary w-full "
               value={userInputText}
               onChange={(e) => setUserInputText(e.target.value)}
               disabled={!fileUploaded}
@@ -381,6 +389,7 @@ const ChatBot = () => {
             document.getElementById('file_upload_model').showModal()
           }
         >
+          
           <FaFileCirclePlus size={20} />
         </button>
       </div>

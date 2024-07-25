@@ -62,9 +62,23 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 chat_engine_dict = defaultdict(BaseChatEngine)
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in {'txt', 'pdf', 'docx'}
+def reset_chat_engine(user_id):
+    chat_engine = chat_engine_dict.get(user_id, None)
+
+    if not chat_engine:
+        index = VectorStoreIndex.from_vector_store(vector_store)
+        chat_engine = index.as_chat_engine(chat_mode='best',
+                                           response_synthesizer=get_response_synthesizer(
+                                               response_mode="compact"),
+                                           similarity_top_k=5,
+                                           filters=MetadataFilters(
+                                               filters=[ExactMatchFilter(key="user", value=user_id)]),
+                                           node_postprocessors=[
+                                               RankGPTRerank(top_n=3, llm=OpenAI(
+                                                   model="gpt-3.5-turbo-0125"))
+                                           ])
+
+    chat_engine.reset()
 
 
 @app.route('/upload', methods=['POST'])
@@ -135,6 +149,41 @@ def process_query():
             return jsonify(response.response), 200
         else:
             return 'No query provided', 403
+    except Exception as e:
+        return str(e), 403
+
+
+@app.route('/clear-chat', methods=['DELETE'])
+def clear_chat():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+
+        reset_chat_engine(user_id)
+        return 'Chat cleared', 200
+    except Exception as e:
+        return str(e), 403
+
+
+@app.route('/clear-doc', methods=['DELETE'])
+def clear_doc():
+    try:
+        data = request.json
+        user_id = data.get('user_id', '')
+
+        qdrant_client.delete(collection_name="quizzy_plus_collection", points_selector=models.FilterSelector(
+            filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="user",
+                        match=models.MatchValue(value=user_id)
+                    )
+                ]
+            )
+        ))
+
+        reset_chat_engine(user_id)
+        return 'Docs cleared', 200
     except Exception as e:
         return str(e), 403
 
