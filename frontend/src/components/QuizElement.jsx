@@ -8,12 +8,12 @@ const QuizElement = ({ quNum, quiz, userAnswers, setUserAnswers }) => {
       const filtered = userAnswers.filter((answer) => answer.id !== quiz.id);
       setUserAnswers([
         ...filtered,
-        { id: quiz.id, usersAnswer: e.target.value },
+        { id: quiz.id, userAnswer: e.target.value },
       ]);
     } else {
       setUserAnswers([
         ...userAnswers,
-        { id: quiz.id, usersAnswer: e.target.value },
+        { id: quiz.id, userAnswer: e.target.value },
       ]);
     }
   };
