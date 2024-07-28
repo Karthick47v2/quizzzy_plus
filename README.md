@@ -7,7 +7,7 @@ Quizy Plus is an educational web application designed to assist students in prep
 - A chat assistant that serves as a study buddy.
 - Detailed analytics and personalized recommendations based on quiz performance.
 
-<!--<img src="archi.png" width="800px" height="400px"/>-->
+<img src="archi_image.png" width="800px" height="400px"/>
 
 ## Design Decisions
 - Microservices Architecture: The application is divided into several microservices to ensure scalability and maintainability.
