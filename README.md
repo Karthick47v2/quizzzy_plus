@@ -9,7 +9,6 @@ Quizy Plus is an educational web application designed to assist students in prep
 
 <!--<img src="archi.png" width="800px" height="400px"/>-->
 
-
 ## Design Decisions
 - Microservices Architecture: The application is divided into several microservices to ensure scalability and maintainability.
 - Containerization: All services are containerized using Docker, which simplifies deployment and orchestration.
