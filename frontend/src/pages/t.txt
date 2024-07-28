@@ -1,0 +1,74 @@
+import { useEffect, useState } from 'react';
+import { uploadBytes, ref } from 'firebase/storage';
+import { storage } from '../utils/firebaseConfig';
+
+const PDFtoQuestions = () => {
+  const token = localStorage.getItem('userToken');
+
+  console.log(token)
+
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [fileUploaded, setFileUploaded] = useState(false);
+  const [resError, setResError] = useState('');
+
+  const handleFileUpload = () => {
+    if (file == null) return;
+    setUploading(true);
+    const fileName = `quizpdf/${file.name}`;
+    const storageRef = ref(storage, fileName);
+
+    uploadBytes(storageRef, file)
+      .then(async (snapshot) => {
+        try {
+          const response = await fetch('http://quizzzy.com/quiz/gen-qa', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ filename: fileName }),
+          });
+          if (response.ok) {
+            console.log('File details sent to backend successfully');
+            setFileUploaded(true);
+            setUploading(false);
+          } else {
+            console.error(
+              'Failed to send file details to backend:',
+              response.statusText
+            );
+            setUploading(false);
+          }
+        } catch (error) {
+          console.error('Error sending file details to backend:', error);
+          setUploading(false);
+        }
+      })
+      .catch((error) => {
+        console.error('Error uploading file to firebase store', error);
+        setUploading(false);
+      });
+  };
+
+  return (
+    <>
+      <div className="bg-white border-x max-w-5xl mx-auto h-full flex justify-center items-center overflow-y-scroll">
+        <div className="join">
+          <input
+            type="file"
+            className="file-input file-input-bordered w-full max-w-xs join-item"
+            accept=".pdf"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+          <div className="indicator">
+            <button onClick={handleFileUpload} disabled={!file || uploading} className="btn btn-primary text-white fon join-item">
+              Generate
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+export default PDFtoQuestions;
